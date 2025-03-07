@@ -5,17 +5,22 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    Animator animator;
-    public float Speed;
     Rigidbody2D rb;
-    float horizontal;
+    Animator animator;
     SpriteRenderer spriteRenderer;
+    float speed = 4f;
+    float horizontal;
+    float forcaPulo = 9f;
+    bool noChao;
+    public Transform[] pontosSpawn = new Transform[5];
+    public GameObject Diamante;
 
     void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        Spawnar();
     }
 
     void Update()
@@ -32,20 +37,42 @@ public class Player : MonoBehaviour
             spriteRenderer.flipX = true;
             animator.SetTrigger("Correr");
         }
-        else 
+        else
         {
             horizontal = 0;
             animator.SetTrigger("Idle");
         }
+        if (Input.GetKey(KeyCode.UpArrow) && noChao)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, forcaPulo);
+            animator.SetTrigger("Pular");
+        }
 
-        rb.velocity = new Vector2(horizontal * Speed, rb.velocity.y);
+        rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+
+
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Diamante"))
         {
           Destroy(collision.gameObject);
-            Debug.Log("Coletou");
+          Spawnar();
         }
+        else if (collision.gameObject.CompareTag("Chão"))
+        {
+            noChao = true;
+        }
+    }
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Chão"))
+        {
+            noChao = false;
+        }
+    }
+    private void Spawnar()
+    {
+        Instantiate(Diamante, pontosSpawn[Random.Range(1,5)].position,Quaternion.identity);
     }
 }
